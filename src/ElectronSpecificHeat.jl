@@ -19,18 +19,25 @@ const m_e = ustrip(PhysicalConstants.CODATA2018.m_e)
 ϵ_min = 0
 ϵ_max = ϵ_from_book(9)
 
-# Temperature range in Kelvin
-T_min = 500
-T_max = 10e4
+# Number of electrons (conducing electrons for Potassium, electons / m^3)
+N = 1.33e28
+
+# Side length of containing cube in meters
+L = 1
 
 # Fermi-Dirac distribution
 function f(ϵ, T, μ)
   return 1 / (exp((ϵ - μ) / (k_B * T)) + 1)
 end
 
+# Fermi energy as a function of number of electrons and side length of containing cube
 function ϵ_F(N, L)
   return (ħ^2 / (2 * m_e)) * (3 * π^2 * N / L^3)^(2 / 3)
 end
+
+# Temperature range in Kelvin
+T_min = 0
+T_max = e_F(N, L) / k_B * 0.01
 
 # Plots the Fermi-Dirac distribution as a function of temperature and energy
 function plot_fermi_dirac(μ)
@@ -57,13 +64,17 @@ function plot_fermi_dirac_textbook()
   return plot_fermi_dirac(μ)
 end
 
-# function df_dT(ϵ, T, μ)
-#   return ForwardDiff.derivative(T -> f(ϵ, T, μ), T)
-# end
-
+# Implementation of the derivative of the Fermi-Dirac distribution with respect to temperature 
+# using automatic differentiation
 function df_dT(ϵ, T, μ)
-  return -1 / (k_B * T) * exp((ϵ - μ) / (k_B * T)) / (exp((ϵ - μ) / (k_B * T)) + 1)^2
+  return ForwardDiff.derivative(T -> f(ϵ, T, μ), T)
 end
+
+# Implementation of the derivative of the Fermi-Dirac distribution with respect to temperature 
+# as analytical expression
+# function df_dT(ϵ, T, μ)
+#   return -1 / (k_B * T) * exp((ϵ - μ) / (k_B * T)) / (exp((ϵ - μ) / (k_B * T)) + 1)^2
+# end
 
 function plot_df_dT(μ)
   ϵs = range(ϵ_min, ϵ_max, length=400)
