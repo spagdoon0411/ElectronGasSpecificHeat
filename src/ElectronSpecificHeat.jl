@@ -4,6 +4,7 @@ using PhysicalConstants
 using Unitful
 using GLMakie
 using ForwardDiff
+using QuadGK
 
 # Constants
 const k_B = ustrip(PhysicalConstants.CODATA2018.k_B)
@@ -56,8 +57,12 @@ function plot_fermi_dirac_textbook()
   return plot_fermi_dirac(μ)
 end
 
+# function df_dT(ϵ, T, μ)
+#   return ForwardDiff.derivative(T -> f(ϵ, T, μ), T)
+# end
+
 function df_dT(ϵ, T, μ)
-  return ForwardDiff.derivative(T -> f(ϵ, T, μ), T)
+  return -1 / (k_B * T) * exp((ϵ - μ) / (k_B * T)) / (exp((ϵ - μ) / (k_B * T)) + 1)^2
 end
 
 function plot_df_dT(μ)
@@ -88,7 +93,7 @@ end
 
 N = 1e17
 L = 1
-function plot_density_of_states()
+function plot_density_of_states(N, L)
   ϵ_min = 0
   ϵ_max = ϵ_F(N, L) * 1.5
   ϵs = range(ϵ_min, ϵ_max, length=400)
@@ -106,8 +111,33 @@ function plot_density_of_states()
   return fig
 end
 
+# Electron gas specific heat as a function of temperature assuming μ = ϵ_F
+function C(T, N, L)
+  ϵ_f = ϵ_F(N, L)
+  integrand(ϵ) = (ϵ - ϵ_f) * df_dT(ϵ, T, ϵ_f) * D(N, ϵ, L)
+  return quadgk(integrand, 0, ϵ_f)[1]
+end
+
+function plot_specific_heat(N, L)
+  T_min = 1
+  T_max = (ϵ_F(N, L) / k_B) * 0.01
+  Ts = range(T_min, T_max, length=400)
+  Cs = [C(T, N, L) for T in Ts]
+
+  fig = Figure(size=(800, 600))
+  axis = Axis(
+    fig[1, 1],
+    xlabel="Temperature T (K)",
+    ylabel="Specific heat C(T) (J/K)",
+    limits=(T_min, T_max, 0, nothing)
+  )
+  lines!(axis, Ts, Cs)
+  autolimits!(axis)
+  return fig
+end
+
 export k_B, ħ, m_e, ϵ_from_book, ϵ_min, ϵ_max, T_min, T_max, f, ϵ_F,
   plot_fermi_dirac, plot_fermi_dirac_textbook, plot_df_dT, plot_df_dT_textbook,
-  plot_density_of_states, D
+  plot_density_of_states, D, plot_specific_heat, C, df_dT
 
 end # module ElectronSpecificHeat
