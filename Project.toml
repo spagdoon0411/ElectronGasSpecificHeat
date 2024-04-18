@@ -1,0 +1,4 @@
+name = "ElectronSpecificHeat"
+uuid = "a9fdd83a-b2f3-419c-9d4f-4924f36b6965"
+authors = ["spagdoon0411 <spandan.suthar@live.com>"]
+version = "0.1.0"
