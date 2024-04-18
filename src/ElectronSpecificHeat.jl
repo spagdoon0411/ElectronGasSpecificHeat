@@ -48,6 +48,8 @@ function plot_fermi_dirac(μ)
   return fig
 end
 
+# Plots the Fermi-Dirac distribution using the condition T_F = ϵ_F / k_B = 5e4,
+# as on Kittel 136
 function plot_fermi_dirac_textbook()
   μ = ϵ_F(5e4 * k_B, 1)
   return plot_fermi_dirac(μ)
