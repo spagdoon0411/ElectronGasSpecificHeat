@@ -55,7 +55,6 @@ function plot_fermi_dirac_textbook()
   return plot_fermi_dirac(μ)
 end
 
-
 export k_B, ħ, m_e, ϵ_from_book, ϵ_min, ϵ_max, T_min, T_max, fermi_dirac, ϵ_F, plot_fermi_dirac, plot_fermi_dirac_textbook
 
 end # module ElectronSpecificHeat
