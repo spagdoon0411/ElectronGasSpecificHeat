@@ -15,13 +15,12 @@ const m_e = ustrip(PhysicalConstants.CODATA2018.m_e)
 # to energy in Joules
 ϵ_from_book = x -> x * k_B * 10e3
 
-
 # Side length of containing cube in meters
 L = 1
 
 # Fermi-Dirac distribution
 function f(ϵ, T, μ)
-  return 1 / (exp((ϵ - μ) / (k_B * T)) + 1)
+  return 1 / (exp((ϵ - μ) / (k_B * T) + 1) + 1)
 end
 
 # Fermi energy as a function of number of electrons and side length of containing cube
@@ -63,6 +62,10 @@ end
 function df_dT(ϵ, T, μ)
   return ForwardDiff.derivative(x -> f(ϵ, x, μ), T)
 end
+
+# function df_dT(ϵ, T, μ)
+#   return ((ϵ - μ) / (k_B * T^2)) * exp((ϵ - μ) / (k_B * T)) / (exp((ϵ - μ) / (k_B * T)) + 1)^2
+# end
 
 function plot_df_dT(μ)
   ϵ_min = 0
@@ -115,7 +118,13 @@ end
 # Electron gas specific heat as a function of temperature assuming μ = ϵ_F
 function C(T, N, L)
   ϵ_f = ϵ_F(N, L)
-  integrand(ϵ) = (ϵ - ϵ_f) * df_dT(ϵ, T, ϵ_f) * D(N, ϵ, L)
+  function integrand(ϵ)
+    res = (ϵ - ϵ_f) * df_dT(ϵ, T, ϵ_f) * D(N, ϵ, L)
+    if isnan(res)
+      return 0
+    end
+    return res
+  end
   return quadgk(integrand, 0, ϵ_f)[1]
 end
 
